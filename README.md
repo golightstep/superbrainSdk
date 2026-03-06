@@ -111,4 +111,4 @@ A simple REST API for non-Go environments.
 - **GET /read**: `?ptr_id=...&offset=0&length=1024`
 
 ## License
-Proprietary. All rights reserved.
+MIT License. See `LICENSE` for details.
