@@ -84,5 +84,31 @@ Reads `length` bytes from the distributed pointer at the specified `offset`.
 ### `(c *Client) Free(ptrID string) error`
 Releases the distributed memory back to the cluster pool.
 
+## Agent Integration
+
+### 1. MCP Server (Model Context Protocol)
+SuperBrain includes an MCP server to allow AI agents like Claude Desktop or Cursor to use distributed memory as a tool.
+
+#### Configuration (Claude Desktop)
+Add this to your `claude_desktop_config.json`:
+```json
+"mcpServers": {
+  "superbrain": {
+    "command": "/path/to/superbrainSdk/mcp-server",
+    "env": {
+      "SUPERBRAIN_COORDINATOR": "localhost:50050",
+      "DYLD_LIBRARY_PATH": "/path/to/superbrainSdk/lib"
+    }
+  }
+}
+```
+
+### 2. HTTP Bridge
+A simple REST API for non-Go environments.
+- **Start**: `go run cmd/http-bridge/main.go`
+- **POST /allocate**: `{"size": 1048576}`
+- **POST /write**: `{"ptr_id": "...", "offset": 0, "data": "..."}`
+- **GET /read**: `?ptr_id=...&offset=0&length=1024`
+
 ## License
 Proprietary. All rights reserved.
