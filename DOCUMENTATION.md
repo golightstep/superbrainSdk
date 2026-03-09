@@ -10,6 +10,7 @@ Welcome to the Superbrain SDK! This guide explains how external developers and A
 5. [Node.js / TypeScript SDK Usage](#nodejs--typescript-sdk-usage)
 6. [Enterprise mTLS & E2EE](#enterprise-mtls--e2ee)
 7. [Architecture & Agent Flow Diagrams](#architecture--agent-flow-diagrams)
+8. [API Reference (Godoc Style)](#api-reference-godoc-style)
 ---
 
 ## Prerequisites
@@ -257,6 +258,68 @@ graph TD
     
     A3 -- "3. Read() -> Local AES decrypt" --> MN1
 
-    Note left of A1: Encryption Keys never <br>leave the Agent boundaries.
-    Note right of MN3: Memory Nodes only <br>store ciphertext noise.
+    Note1["Encryption Keys never <br>leave the Agent boundaries."]:::note
+    Note2["Memory Nodes only <br>store ciphertext noise."]:::note
+
+    classDef note fill:#fff9c4,stroke:#fbc02d,stroke-dasharray: 5 5,color:black;
 ```
+
+---
+
+## API Reference (Godoc Style)
+
+This section maps directly to the Go SDK methods (`pkg/sdk/client.go`), which are exposed to Python and Node.js with identical signatures.
+
+### `NewClient(coordinatorAddr string) (*Client, error)`
+Initializes a new Superbrain SDK client.
+*   **Args**: 
+    *   `coordinatorAddr`: Host and port of the Superbrain Coordinator (e.g., `"localhost:50050"`).
+*   **Returns**: A `Client` instance.
+*   **Errors**: Connection refused, dial timeout.
+
+### `NewClientWithEncryption(key []byte, coordinatorAddr string) (*Client, error)`
+Initializes a Secure SDK client that automatically encrypts/decrypts data locally.
+*   **Args**:
+    *   `key`: Exactly 32 bytes for `AES-GCM-256`.
+    *   `coordinatorAddr`: Host and port.
+*   **Returns**: A `Client` instance.
+*   **Errors**: Key length mismatch, connection failure.
+
+### `Client.Register(agentID string) error`
+Registers the agent with the Secure Fabric and obtains mTLS certificates.
+*   **Args**:
+    *   `agentID`: A unique string identifier (e.g., `"researcher-bot"`).
+*   **Returns**: None on success.
+*   **Errors**: Unauthorized, Coordinator unreachable.
+
+### `Client.Allocate(size uint64) (*Pointer, error)`
+Requests a chunk of distributed memory across the cluster.
+*   **Args**:
+    *   `size`: Number of bytes requested.
+*   **Returns**: A `Pointer` struct containing the 36-character `ID`.
+*   **Errors**: `not enough healthy nodes` (check cluster size vs replication factor).
+
+### `Client.Write(ptr *Pointer, offset uint64, data []byte) error`
+Writes binary data to an allocated pointer. If encryption is enabled, data is encrypted *before* transmission.
+*   **Args**:
+    *   `ptr`: The pointer instance retrieved from `Allocate()`.
+    *   `offset`: Starting byte offset (usually `0`).
+    *   `data`: The payload to store.
+*   **Returns**: None on success.
+*   **Errors**: `write out of bounds`, node disconnected midway.
+
+### `Client.Read(ptr *Pointer, offset uint64, length uint64) ([]byte, error)`
+Reads data back from the memory pool. If encryption is enabled, it automatically decrypts the ciphertext.
+*   **Args**:
+    *   `ptr`: The pointer instance.
+    *   `offset`: Byte offset to start reading.
+    *   `length`: Number of bytes to read. *(Note: Add 28 bytes to length if E2EE overhead is active).*
+*   **Returns**: The original plaintext data.
+*   **Errors**: `read out of bounds`, tag authentication failed (bad encryption key).
+
+### `Client.Free(ptr *Pointer) error`
+Releases the distributed memory back to the pool.
+*   **Args**:
+    *   `ptr`: The pointer to free.
+*   **Returns**: None on success.
+*   **Errors**: Pointer already freed or not found.
