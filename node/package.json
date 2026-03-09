@@ -1,20 +1,35 @@
 {
-  "name": "node",
-  "version": "1.0.0",
+  "name": "@superbrain/sdk",
+  "version": "0.1.0",
+  "description": "Premium High-Performance Distributed Memory SDK for AI Agents",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "types": "index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anispy211/superbrainSdk.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "bugs": {
+    "url": "https://github.com/anispy211/superbrainSdk/issues"
+  },
+  "homepage": "https://github.com/anispy211/superbrainSdk#readme",
+  "keywords": [
+    "distributed-memory",
+    "ai-agents",
+    "mcp",
+    "grpc",
+    "performance",
+    "context-sharing"
+  ],
+  "author": "Anispy",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "koffi": "^2.15.1"
   },
   "devDependencies": {
-    "@types/node": "^25.3.5",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
   }
 }
