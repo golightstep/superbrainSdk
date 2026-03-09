@@ -1,0 +1,223 @@
+:root {
+  --bg-deep: #0a0e17;
+  --bg-panel: #111827;
+  --accent-cyan: #06b6d4;
+  --accent-green: #10b981;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(17, 24, 39, 0.7);
+  --glow-cyan: 0 0 15px rgba(6, 182, 212, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  overflow: hidden;
+  height: 100vh;
+}
+
+#root {
+  height: 100%;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 240px 1fr 350px;
+  grid-template-rows: 64px 1fr 40px;
+  height: 100vh;
+  gap: 12px;
+  padding: 12px;
+}
+
+/* Header */
+header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green));
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.status-bar {
+  display: flex;
+  gap: 24px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Sidebar */
+aside {
+  background: var(--bg-panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  background: rgba(6, 182, 212, 0.1);
+  color: var(--accent-cyan);
+  border-left: 3px solid var(--accent-cyan);
+}
+
+/* Main Content */
+main {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 2fr 1.2fr;
+  gap: 12px;
+}
+
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.panel-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Fabric Visualization */
+.fabric-vis {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(6, 182, 212, 0.05) 0%, transparent 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.coordinator-node {
+  width: 120px;
+  height: 120px;
+  background: var(--glass-bg);
+  border: 2px solid var(--accent-cyan);
+  border-radius: 50%;
+  box-shadow: var(--glow-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* Right Sidebar (Privacy Shield) */
+.right-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shield-container {
+  flex: 1;
+}
+
+.data-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8rem;
+}
+
+.data-bubble {
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+}
+
+.data-bubble.plaintext {
+  color: var(--accent-green);
+}
+
+.data-bubble.encrypted {
+  color: var(--accent-cyan);
+  word-break: break-all;
+  opacity: 0.7;
+}
+
+/* Terminal Feed */
+.terminal {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8rem;
+  padding: 12px;
+  height: 100%;
+  overflow-y: auto;
+  color: var(--text-secondary);
+  background: #050505;
+  border-radius: 4px;
+}
+
+.log-entry { margin-bottom: 4px; }
+.log-time { color: #555; margin-right: 8px; }
+.log-msg { color: #ccc; }
+.log-agent { color: var(--accent-cyan); font-weight: bold; }
+.log-code { color: #a5d6ff; display: block; padding-left: 16px; margin: 4px 0; border-left: 2px solid #333; }
+
+/* Animation Utils */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pulse { animation: pulse 4s infinite ease-in-out; }

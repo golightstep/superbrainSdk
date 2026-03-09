@@ -25,64 +25,48 @@ The SDK requires the `libsuperbrain` shared library.
 
 ## Usage Example
 
+### 1. Simple Connection
 ```go
-package main
+client, err := sdk.NewClient("localhost:60050")
+```
 
-import (
-    "fmt"
-    "log"
-    "github.com/anispy211/superbrainSdk/sdk"
-)
+### 2. Secure Fabric (mTLS & E2EE)
+```go
+// 1. Enroll in the security fabric (mTLS)
+client, err := sdk.NewClient("localhost:60050")
+err = client.Register("researcher-agent")
 
-func main() {
-    // 1. Connect to the coordinator cluster
-    client, err := sdk.NewClient("localhost:50050")
-    if err != nil {
-        log.Fatal(err)
-    }
+// 2. Enable End-to-End Encryption
+key := []byte("32-byte-long-secret-key-12345678")
+client, err = sdk.NewClientWithEncryption(key, "localhost:60050")
 
-    // 2. Allocate 100 MB of distributed RAM
-    ptrID, err := client.Allocate(100 * 1024 * 1024)
-    if err != nil {
-        log.Fatal(err)
-    }
-    fmt.Printf("Allocated Pointer: %s\n", ptrID)
-
-    // 3. Write data
-    data := []byte("SuperBrain is alive!")
-    err = client.Write(ptrID, 0, data)
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    // 4. Read back
-    readBack, err := client.Read(ptrID, 0, uint64(len(data)))
-    if err != nil {
-        log.Fatal(err)
-    }
-    fmt.Println("Read back:", string(readBack))
-
-    // 5. Free memory
-    client.Free(ptrID)
-}
+// 3. Securely Allocate & Write
+ptrID, _ := client.Allocate(1024)
+client.Write(ptrID, 0, []byte("Top secret data"))
 ```
 
 ## API Reference
 
 ### `NewClient(addrs string) (*Client, error)`
-Initializes a new SuperBrain client. `addrs` is a comma-separated list of coordinator addresses (e.g., `"1.2.3.4:50050,1.2.3.5:50050"`).
+Initializes a new SuperBrain client. `addrs` is a comma-separated list of coordinator addresses.
+
+### `NewClientWithEncryption(key []byte, addrs string) (*Client, error)`
+Initializes a client with **End-to-End Encryption** enabled. Data is encrypted via AES-GCM before leaving the SDK.
+
+### `(c *Client) Register(agentID string) error`
+Enrolls the agent in the **Secure Fabric** via mTLS. Automatically generates a keypair and obtains a certificate from the Coordinator CA.
 
 ### `(c *Client) Allocate(size uint64) (string, error)`
-Allocates `size` bytes across the cluster. Returns a unique `ptrID` string used for subsequent operations.
+Allocates `size` bytes across the cluster. Returns a unique `ptrID`.
 
 ### `(c *Client) Write(ptrID string, offset uint64, data []byte) error`
-Writes `data` to the distributed pointer at the specified `offset`.
+Writes `data` to the distributed pointer. If E2EE is enabled, data is encrypted automatically.
 
 ### `(c *Client) Read(ptrID string, offset uint64, length uint64) ([]byte, error)`
-Reads `length` bytes from the distributed pointer at the specified `offset`.
+Reads `length` bytes from the distributed pointer. If E2EE is enabled, data is decrypted automatically.
 
 ### `(c *Client) Free(ptrID string) error`
-Releases the distributed memory back to the cluster pool.
+Releases the distributed memory.
 
 ## Agent Integration
 

@@ -7,6 +7,8 @@ package sdk
 
 // Function prototypes from the shared library
 extern char* SB_NewClient(char* addrs);
+extern char* SB_NewClientWithEncryption(char* addrs, unsigned char* key, int keyLen);
+extern char* SB_Register(char* clientID, char* agentID);
 extern char* SB_Allocate(char* clientID, uint64_t size);
 extern char* SB_Write(char* clientID, char* ptrID, uint64_t offset, unsigned char* data, uint64_t length);
 extern char* SB_Read(char* clientID, char* ptrID, uint64_t offset, uint64_t length, unsigned char** outData, uint64_t* outLen);
@@ -35,6 +37,33 @@ func NewClient(addrs string) (*Client, error) {
 	}
 
 	return &Client{id: C.CString(resStr)}, nil
+}
+
+func NewClientWithEncryption(key []byte, addrs string) (*Client, error) {
+	cAddrs := C.CString(addrs)
+	defer C.free(unsafe.Pointer(cAddrs))
+
+	res := C.SB_NewClientWithEncryption(cAddrs, (*C.uchar)(unsafe.Pointer(&key[0])), C.int(len(key)))
+	defer C.free(unsafe.Pointer(res))
+
+	resStr := C.GoString(res)
+	if len(resStr) > 6 && resStr[:6] == "error:" {
+		return nil, fmt.Errorf("%s", resStr)
+	}
+
+	return &Client{id: C.CString(resStr)}, nil
+}
+
+func (c *Client) Register(agentID string) error {
+	cAgentID := C.CString(agentID)
+	defer C.free(unsafe.Pointer(cAgentID))
+
+	res := C.SB_Register(c.id, cAgentID)
+	if res != nil {
+		defer C.free(unsafe.Pointer(res))
+		return fmt.Errorf("%s", C.GoString(res))
+	}
+	return nil
 }
 
 func (c *Client) Allocate(size uint64) (string, error) {

@@ -89,6 +89,8 @@ extern "C" {
 #endif
 
 extern char* SB_NewClient(char* addrs);
+extern char* SB_NewClientWithEncryption(char* addrs, unsigned char* key, int keyLen);
+extern char* SB_Register(char* clientID, char* agentID);
 extern char* SB_Allocate(char* clientID, GoUint64 size);
 extern char* SB_Write(char* clientID, char* ptrID, GoUint64 offset, unsigned char* data, GoUint64 length);
 extern char* SB_Read(char* clientID, char* ptrID, GoUint64 offset, GoUint64 length, unsigned char** outData, GoUint64* outLen);
