@@ -23,11 +23,29 @@ The SDK requires the `libsuperbrain` shared library.
   export DYLD_LIBRARY_PATH=$PWD/lib:$DYLD_LIBRARY_PATH
   ```
 
+## 🕸️ SDK Visual Showcase
+We have built an interactive React dashboard to help developers visualize the **Secure Fabric** (mTLS and E2EE). 
+To view the showcase locally:
+```bash
+cd showcase
+npm install
+npm run dev
+```
+
+## 📚 Comprehensive Documentation
+For a detailed guide on how to integrate and consume the Superbrain SDK across Go and Python, including Enterprise mTLS and E2EE configurations, please see our [**SDK Consumption Guide**](./DOCUMENTATION.md).
+
 ## Usage Example
 
 ### 1. Simple Connection
 ```go
+// Go
 client, err := sdk.NewClient("localhost:60050")
+```
+```python
+# Python
+from superbrain import Client
+client = Client("localhost:60050")
 ```
 
 ### 2. Secure Fabric (mTLS & E2EE)
