@@ -2,6 +2,23 @@
 
 Welcome to the Superbrain SDK! This guide explains how external developers and AI agents can seamlessly consume the Superbrain distributed memory fabric using our multi-language wrappers.
 
+## 🚀 Quick Installation
+
+### Python
+```bash
+pip install superbrain-sdk
+```
+
+### Node.js (TypeScript/JavaScript)
+```bash
+npm install superbrain-distributed-sdk
+```
+
+### Go
+```bash
+go get github.com/anispy211/superbrainSdk
+```
+
 ## Table of Contents
 1. [Prerequisites](#prerequisites)
 2. [Shared Library Setup](#shared-library-setup)

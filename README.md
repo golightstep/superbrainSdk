@@ -1,6 +1,11 @@
 # SuperBrain SDK (Binary Distribution)
 
-The official Go SDK for the SuperBrain Distributed Memory Pool. This SDK allows you to allocate, read, and write memory across a cluster of nodes transparently.
+The high-performance distributed memory fabric for AI agents.
+
+### 📦 Installation
+- **Python**: `pip install superbrain-sdk`
+- **Node.js**: `npm install superbrain-distributed-sdk`
+- **Go**: `go get github.com/anispy211/superbrainSdk`
 
 ## Installation
 
