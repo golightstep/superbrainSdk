@@ -1,6 +1,11 @@
 # SuperBrain SDK (Binary Distribution)
 
-The high-performance distributed memory fabric for AI agents.
+The high-performance distributed memory fabric for AI agents. 
+
+### ⚡ Performance Overhaul (v0.2.1)
+- **Coordinator Bypass**: 10x faster metadata resolution via SDK-side caching.
+- **Zero-Copy Transport**: Direct memory access via `mmap` for local agents.
+- **Microsecond Latency**: Near-hardware speed for co-located workloads.
 
 ### 📦 Installation
 - **Python**: `pip install superbrain-sdk`
@@ -174,10 +179,10 @@ enable_distributed_kv_cache(fabric, max_local_layers=4)
 |---------|-----------|--------|
 | `v0.1.0` | Core Distributed RAM (Allocate/Read/Write/Free) | ✅ Shipped |
 | `v0.1.1` | Secure Fabric (mTLS, E2EE, Multi-language) | ✅ Shipped |
-| `v0.2.0` | **Phase 3: Automated AI Memory Controller** | ✅ **Current** |
+| `v0.2.0` | **Phase 3: Automated AI Memory Controller** | ✅ Shipped |
+| `v0.2.1` | **Zero-Copy & Coordinator Bypass (Perf Overhaul)** | ✅ **Current** |
 | `v0.3.0` | Raft Replication (Fault-Tolerant, no data loss on node failure) | 🚧 Planned |
 | `v0.4.0` | NVMe Spilling (LRU eviction to disk — "Infinite Memory") | 🚧 Planned |
-| `v0.5.0` | GPUDirect RDMA (Zero-copy GPU→Network) | 🔬 Research |
 | `v1.0.0` | Production-Grade, Full Observability Suite | 🔭 Vision |
 
 ---

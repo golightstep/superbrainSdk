@@ -26,4 +26,7 @@ dependencies = []
 "Bug Tracker" = "https://github.com/anispy211/superbrainSdk/issues"
 
 [tool.setuptools]
-packages = ["superbrain", "superbrain.integrations"]
+packages = ["superbrain", "superbrain.integrations", "superbrain.lib"]
+
+[tool.setuptools.package-data]
+"superbrain.lib" = ["*.so", "*.dylib", "*.dll"]

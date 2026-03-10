@@ -474,6 +474,53 @@ graph TD
     classDef note fill:#fff9c4,stroke:#fbc02d,stroke-dasharray: 5 5,color:black;
 ```
 
+### 3. v0.2.1 Performance Architecture (Zero-Copy & Bypass)
+
+SuperBrain v0.2.1 introduces a high-performance hot-path that bypasses traditional distributed systems bottlenecks.
+
+```mermaid
+graph TD
+    subgraph "Agent Machine (Local)"
+        SDK["SDK Client (Process A)"]
+        Cache[("Metadata Cache")]
+        SHM[("/tmp/superbrain_shm_XYZ")]
+    end
+
+    subgraph "Coordinator (Control Plane)"
+        Coord["Coordinator Service"]
+        Raft[("Raft FSM (Block Maps)")]
+    end
+
+    subgraph "Memory Node (Data Plane)"
+        Node["Memory Node Service"]
+        RAM[("Physical RAM")]
+    end
+
+    %% Control Path
+    SDK -- "1. Resolve (Slow Path)" --> Coord
+    Coord -- "Lookup" --> Raft
+    Coord -- "2. Returns NodeID + SHM_Path + Offset" --> SDK
+    SDK -- "Update" --> Cache
+
+    %% Bypass Path 1: Coordinator Bypass
+    SDK -. "3. Subsequent Reads (Bypass Coord)" .-> Cache
+
+    %% Bypass Path 2: Network Bypass (Zero-Copy)
+    SDK -- "4. Direct Memory Access (Mmap)" --> SHM
+    Node -- "Manages" --> SHM
+    SHM -- "Shared" --> RAM
+
+    %% Styles
+    style SDK fill:#f9f,stroke:#333,stroke-width:2px
+    style Coord fill:#bbf,stroke:#333,stroke-width:2px
+    style Node fill:#bfb,stroke:#333,stroke-width:2px
+    style RAM fill:#ff9,stroke:#333,stroke-width:4px
+    style SHM fill:#ff9,stroke:#333,stroke-dasharray: 5 5
+```
+
+- **Coordinator Bypass**: The SDK caches pointer maps locally. No synchronous RPC is required to find your data.
+- **Zero-Copy / SHM Bypass**: For co-located agents, memory is shared via `mmap`. No network stack, no serialization — just raw RAM access.
+
 ---
 
 ## API Reference (Godoc Style)
@@ -624,8 +671,8 @@ Unified production API integrating all Phase 3 subsystems.
 |---------|-----------|--------|
 | `v0.1.0` | Core Distributed RAM (Allocate/Read/Write/Free) | ✅ Shipped |
 | `v0.1.1` | Secure Fabric (mTLS, E2EE, Pub/Sub) | ✅ Shipped |
-| `v0.2.0` | **Phase 3: Automated AI Memory Controller** | ✅ **Current** |
+| `v0.2.0` | **Phase 3: Automated AI Memory Controller** | ✅ Shipped |
+| `v0.2.1` | **Zero-Copy & Coordinator Bypass (Perf Overhaul)** | ✅ **Current** |
 | `v0.3.0` | Raft Replication (no data loss on node failure) | 🚧 Planned |
 | `v0.4.0` | NVMe Spilling ("Infinite Memory" via LRU eviction to disk) | 🚧 Planned |
-| `v0.5.0` | GPUDirect RDMA (zero-copy GPU→Network transfers) | 🔬 Research |
 | `v1.0.0` | Production-Grade stable API + full observability | 🔭 Vision |
