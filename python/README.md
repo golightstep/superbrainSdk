@@ -154,6 +154,39 @@ det = AnomalyDetector()
 
 ---
 
+## 🧹 Memory Management — When to Call `free()`
+
+> **TL;DR** — Use `SharedContext` or `store_kv_cache()` and you **never** need to call `free()`.
+
+| What you call | Need `free()`? | Best for |
+|---------------|:--------------:|----------|
+| `client.allocate()` | ✅ **Yes** | Raw low-level control |
+| `ctx.write("key", data)` | ❌ **No** | Agent-to-agent context sharing |
+| `fabric.create_context("name")` | ❌ **No** | Multi-LLM session state |
+| `fabric.store_kv_cache(prefix)` | ❌ **No** | Shared system prompts, long contexts |
+| `SuperBrainMemory` (LangChain) | ❌ **No** | Chat history across restarts |
+| `enable_distributed_kv_cache()` | ❌ **No** | PyTorch/HuggingFace VRAM overflow |
+
+```python
+# ❌ Raw Client — you must free manually
+ptr = client.allocate(100 * 1024 * 1024)
+client.write(ptr, 0, b"data")
+client.free(ptr)  # ← required!
+
+# ✅ SharedContext — no free, ever
+ctx = fabric.create_context("my-session")
+ctx.write("findings", {"summary": "..."})   # stored in distributed RAM
+ctx.read("findings")                        # read from anywhere
+
+# ✅ KV Cache Pool — no free, auto-evicted
+ptr = fabric.store_kv_cache(b"System prompt", model="gpt-4")
+# 1000 agents → same ptr, stored once ✅
+```
+
+→ [Full Memory Management Guide with diagrams](https://github.com/anispy211/superbrainSdk/blob/main/DOCUMENTATION.md#memory-management--when-to-free)
+
+---
+
 ## 🗺️ Roadmap
 
 | Version | Milestone | Status |

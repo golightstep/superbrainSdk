@@ -112,6 +112,44 @@ The Coordinator is ONLY in the control path (allocate + free).
 
 ---
 
+## 🧹 Memory Management
+
+> **The Node.js SDK exposes the raw client layer — `free()` is always required after `allocate()`.**
+
+```typescript
+// ✅ Always do this after you are done with a pointer
+const ptr = await client.allocate(100 * 1024 * 1024);
+await client.write(ptr, 0, data);
+const result = await client.read(ptr, 0, 0);
+await client.free(ptr);   // ← required — leaks memory if skipped
+```
+
+### 🐍 Want Managed Memory? Use the Python SDK
+
+The Python SDK (`pip install superbrain-sdk`) provides higher-level APIs where **free() is never needed**:
+
+| Python API | Free needed? | What it does |
+|------------|:------------:|--------------|
+| `SharedContext.write("key", data)` | ❌ No | Key-based shared state across agents |
+| `fabric.store_kv_cache(prefix)` | ❌ No | Deduped prompt cache, auto-evicted |
+| `SuperBrainMemory` (LangChain) | ❌ No | Chat history in distributed RAM |
+
+```python
+# Python — no free() ever needed with high-level APIs
+from superbrain import DistributedContextFabric
+
+fabric = DistributedContextFabric(coordinator="localhost:50050")
+ctx = fabric.create_context("session-42")
+
+ctx.write("state", {"step": 10})   # written to distributed RAM
+ctx.read("state")                  # read from any machine
+# No free() ✅
+```
+
+→ [Full Memory Management Guide](https://github.com/anispy211/superbrainSdk/blob/main/DOCUMENTATION.md#memory-management--when-to-free)
+
+---
+
 ## 🔐 Security Features
 
 | Feature | Status |
