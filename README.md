@@ -2,6 +2,8 @@
 
 The high-performance distributed memory fabric for AI agents. 
 
+🔥 **[Join the Enterprise Waitlist](https://binary.so/bC7zobC)** for managed fleets, GPUDirect RDMA access, and dedicated support. 
+
 ### ⚡ Performance Overhaul (v0.2.1)
 - **Coordinator Bypass**: 10x faster metadata resolution via SDK-side caching.
 - **Zero-Copy Transport**: Direct memory access via `mmap` for local agents.
@@ -59,6 +61,8 @@ client = Client("localhost:60050")
 ```
 
 ### 2. Secure Fabric (mTLS & E2EE)
+SuperBrain supports true **End-to-End Encryption (E2EE)**. Data is encrypted via AES-GCM *before* it leaves the SDK, meaning Memory Nodes cannot read your AI's context.
+
 ```go
 // 1. Enroll in the security fabric (mTLS)
 client, err := sdk.NewClient("localhost:60050")
@@ -70,7 +74,7 @@ client, err = sdk.NewClientWithEncryption(key, "localhost:60050")
 
 // 3. Securely Allocate & Write
 ptrID, _ := client.Allocate(1024)
-client.Write(ptrID, 0, []byte("Top secret data"))
+client.Write(ptrID, 0, []byte("Top secret context"))
 ```
 
 ## API Reference
@@ -215,7 +219,7 @@ enable_distributed_kv_cache(fabric, max_local_layers=4)
 
 Looking for enterprise-grade distributed memory solutions, dedicated support, or custom integrations?
 
-[**Join the Enterprise Waitlist**](https://binary.so/bC7zobC)
+🚀 [**Join the Enterprise Waitlist**](https://binary.so/bC7zobC)
 
 ## License
 MIT License. See `LICENSE` for details.
