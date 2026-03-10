@@ -250,4 +250,4 @@ docker compose up -d   # From the main repo: github.com/anispy211/memorypool
 
 - [Full Documentation](https://github.com/anispy211/superbrainSdk/blob/main/DOCUMENTATION.md)
 - [Release Guide](https://github.com/anispy211/superbrainSdk/blob/main/RELEASE_GUIDE.md)
-- [GitHub Repository](https://github.com/anispy211/superbrainSdk)— MIT License
+- [GitHub Repository](https://github.com/anispy211/superbrainSdk)— BSL 1.1
