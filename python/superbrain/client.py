@@ -93,9 +93,9 @@ class Client:
                 raise SuperbrainError(res_str)
 
         # Copy data to bytes and return
-        data = bytes(out_data[:out_len.value])
-        # Note: In a real implementation we should free the C-allocated memory here
-        # but for this demo the SDK handles basic cleanup.
+        if not out_data:
+            return b""
+        data = ctypes.string_at(out_data, out_len.value)
         return data
 
     def free(self, ptr_id: str):

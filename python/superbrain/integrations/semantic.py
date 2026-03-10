@@ -70,7 +70,8 @@ class SBIndex:
         if not _FAISS_AVAILABLE:
             raise ImportError("FAISS is not installed.")
             
-        payload = self._ctrl.read(ptr_id, 0, 0) # Read all
+        payload = self._ctrl.read(ptr_id, 0, 10 * 1024 * 1024) # Read up to 10MB
+        payload = payload.rstrip(b'\x00')
         
         with tempfile.NamedTemporaryFile(delete=False) as tmp:
             tmp_path = tmp.name
@@ -216,8 +217,12 @@ class SemanticMemoryStore:
         """
         Re-attach and synchronize with a distributed index from its root pointer.
         """
-        bundle_data = self._ctrl.read(root_ptr, 0, 0)
-        bundle = json.loads(bundle_data.decode("utf-8"))
+        # Read the small root bundle (we'll read up to 4KB which is plenty for the JSON)
+        bundle_data = self._ctrl.read(root_ptr, 0, 4096)
+        raw_clean = bundle_data.rstrip(b'\x00')
+        if not raw_clean:
+            raise ValueError(f"Empty bundle data read from pointer {root_ptr}")
+        bundle = json.loads(raw_clean.decode("utf-8"))
         
         self._dimension = bundle["dim"]
         
@@ -225,14 +230,19 @@ class SemanticMemoryStore:
         self._index = self._sb_index.pull(bundle["index_ptr"])
         self._index_ptr = bundle["index_ptr"]
         
-        # 2. Pull Manifest/Records
-        manifest_data = self._ctrl.read(bundle["manifest_ptr"], 0, 0)
-        manifest = json.loads(manifest_data.decode("utf-8"))
+        # 2. Pull Manifest/Records (Read up to 1MB manifest)
+        manifest_data = self._ctrl.read(bundle["manifest_ptr"], 0, 1024 * 1024)
+        manifest = json.loads(manifest_data.rstrip(b'\x00').decode("utf-8"))
         
         self._records = [
             SemanticRecord(text=r["text"], metadata=r["meta"], ptr_id=r["ptr"])
             for r in manifest
         ]
+        
+        # 3. Warm up the FAISS index to initialize BLAS/C++ threads
+        if self._records and self._index:
+            dummy_q = np.ones(self._dimension, dtype=np.float32)
+            self.search(dummy_q, top_k=1)
         
         logger.info("[SemanticStore] Successfully loaded '%s' (records=%d)", self._namespace, len(self._records))
 
