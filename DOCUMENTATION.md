@@ -1,6 +1,6 @@
-# Superbrain SDK v0.2.0 — Comprehensive Developer Guide
+# Superbrain SDK v0.7.0 — Comprehensive Developer Guide
 
-Welcome to the Superbrain SDK! This guide covers all APIs across Go, Python, and TypeScript — from the core distributed memory primitives (**v0.1.x**) to the full **Phase 3 Automated AI Memory Controller** (v0.2.0).
+Welcome to the Superbrain SDK! This guide covers all APIs across Go, Python, and TypeScript — from the core distributed memory primitives (**v0.1.x**) to the **Tiered Architecture and Zero-Copy SHM bypass** introduced in v0.7.0.
 
 ## 🚀 Quick Installation
 
@@ -30,7 +30,8 @@ go get github.com/anispy211/superbrainSdk
 8. [API Reference (Godoc Style)](#api-reference-godoc-style)
 9. [Memory Management — When to Free()](#memory-management--when-to-free)
 10. [Phase 3 API Reference](#phase-3-api-reference)
-11. [Roadmap](#roadmap)
+11. [Tiered L1 Architecture (v0.7.0)](#tiered-l1-architecture-v070)
+12. [Roadmap](#roadmap)
 ---
 
 ## Memory Management — When to Free()
@@ -665,6 +666,40 @@ Unified production API integrating all Phase 3 subsystems.
 
 ---
 
+## Tiered L1 Architecture (v0.7.0)
+
+SuperBrain v0.7.0 introduces the ability to operate as a microsecond-latency **L1 Shared Memory Tier** for agent architectures. 
+
+This update significantly reduces network overhead by caching metadata to bypass the Coordinator, and seamlessly upgrading the gRPC data stream to direct Zero-Copy `/dev/shm` access when an agent process and a Memory Node are co-located on the same physical host.
+
+### CircularBuffer (superbrain.kv_pool)
+
+The `CircularBuffer` is an allocation-free ring buffer designed specifically for ultra-fast, continuous data ingestion (like L1 market data or trading ticks). It uses direct hardware memory mapping if local, completely bypassing high-level SDK telemetry for maximum throughput.
+
+| Method | Description |
+|--------|-------------|
+| `CircularBuffer(fabric, size)` | Pre-allocate a fixed-size ring buffer |
+| `push(data)` | Append data, wrapping around if memory is full |
+| `read_all() -> bytes` | Return current coherent state from the memory ring |
+
+```python
+from superbrain import AutoMemoryController
+from superbrain.kv_pool import CircularBuffer
+
+fabric = AutoMemoryController().get_fabric()
+
+# Pre-allocate a 10MB Ring Buffer 
+l1_stream = CircularBuffer(fabric, size=10 * 1024 * 1024, name="rt-market-data")
+
+# Continuous push operations wrap around automatically.
+# If a Memory Node is running locally (127.0.0.1), this compiles down
+# to a raw memory-mapped file write in <15 microseconds.
+l1_stream.push(b"TICK: AAPL 155.00")
+l1_stream.push(b"TICK: TSLA 210.50")
+```
+
+---
+
 ## Roadmap
 
 | Version | Milestone | Status |
@@ -672,7 +707,10 @@ Unified production API integrating all Phase 3 subsystems.
 | `v0.1.0` | Core Distributed RAM (Allocate/Read/Write/Free) | ✅ Shipped |
 | `v0.1.1` | Secure Fabric (mTLS, E2EE, Pub/Sub) | ✅ Shipped |
 | `v0.2.0` | **Phase 3: Automated AI Memory Controller** | ✅ Shipped |
-| `v0.2.1` | **Zero-Copy & Coordinator Bypass (Perf Overhaul)** | ✅ **Current** |
-| `v0.3.0` | Raft Replication (no data loss on node failure) | 🚧 Planned |
-| `v0.4.0` | NVMe Spilling ("Infinite Memory" via LRU eviction to disk) | 🚧 Planned |
-| `v1.0.0` | Production-Grade stable API + full observability | 🔭 Vision |
+| `v0.3.1` | **Semantic Memory (FAISS-Backed Distributed Vectors)** | ✅ Shipped |
+| `v0.4.0` | Gossip & P2P Membership | ✅ Shipped |
+| `v0.5.0` | High Availability & Partition Tolerance | ✅ Shipped |
+| `v0.6.0` | Decentralized Observability & Metrics | ✅ Shipped |
+| `v0.7.0` | **Tiered Architecture (L1 Shared Memory) & SHM Locality Bypass** | ✅ **Current** |
+| `v0.8.0` | Raft Consensus Replication | ✅ Shipped |
+| `v0.9.0` | NVMe Spilling | ✅ Shipped |
