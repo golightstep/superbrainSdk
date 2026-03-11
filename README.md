@@ -228,8 +228,8 @@ l1_stream.push(b"AAPL 150.00") # Uses direct memory-mapped I/O if local
 | `v0.5.0` | High Availability & Partition Tolerance | ✅ Shipped |
 | `v0.6.0` | Decentralized Observability & Metrics | ✅ Shipped |
 | `v0.7.0` | **Tiered Architecture (L1 Shared Memory) & SHM Locality Bypass** | ✅ **Current** |
-| `v0.8.0` | Raft Consensus Replication | 🚧 Planned |
-| `v0.9.0` | NVMe Spilling | 🚧 Planned |
+| `v0.8.0` | Raft Consensus Replication | ✅ Shipped |
+| `v0.9.0` | NVMe Spilling | ✅ Shipped |
 
 ---
 
