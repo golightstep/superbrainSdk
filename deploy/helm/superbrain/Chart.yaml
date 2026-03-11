@@ -1,0 +1,12 @@
+apiVersion: v2
+name: superbrain
+description: High-performance distributed memory fabric for AI agents on the Edge.
+type: application
+version: 0.2.1
+appVersion: "0.2.1"
+keywords:
+  - superbrain
+  - ai
+  - edge
+  - distributed-memory
+  - k3s

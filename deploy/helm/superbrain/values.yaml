@@ -1,0 +1,52 @@
+# superbrain helm values
+
+coordinator:
+  replicaCount: 3
+  image:
+    repository: anispy211/superbrain-coordinator
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 50050
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+memoryNode:
+  image:
+    repository: anispy211/superbrain-node
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  port: 50051
+  gossipPort: 7946
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    interval: 15s
+
+gossip:
+  enabled: true
+  port: 7946
+
+security:
+  enabled: true
+  mtls: true
+  e2ee: false # Enable for high-security edge flows
+
+edge:
+  mdns: true
+  localFallback: true

@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "superbrain.fullname" . }}-coordinator
+spec:
+  serviceName: {{ include "superbrain.fullname" . }}-coordinator
+  replicas: {{ .Values.coordinator.replicaCount }}
+  selector:
+    matchLabels:
+      app: superbrain-coordinator
+  template:
+    metadata:
+      labels:
+        app: superbrain-coordinator
+      annotations:
+        prometheus.io/scrape: "{{ .Values.monitoring.enabled }}"
+        prometheus.io/port: "{{ add .Values.coordinator.service.port 10 }}"
+        prometheus.io/path: "/metrics"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - superbrain-coordinator
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: coordinator
+          image: "{{ .Values.coordinator.image.repository }}:{{ .Values.coordinator.image.tag }}"
+          args:
+            - "--id=$(POD_NAME)"
+            - "--port={{ .Values.coordinator.service.port }}"
+            - "--gossip-port={{ .Values.gossip.port }}"
+            {{- if gt (int .Values.coordinator.replicaCount) 1 }}
+            - "--bootstrap=false"
+            {{- else }}
+            - "--bootstrap=true"
+            {{- end }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          ports:
+            - containerPort: {{ .Values.coordinator.service.port }}
+              name: grpc
+            - containerPort: {{ .Values.gossip.port }}
+              name: gossip
+            - containerPort: {{ add .Values.coordinator.service.port 10 }}
+              name: metrics
+          resources:
+            {{- toYaml .Values.coordinator.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "superbrain.fullname" . }}-coordinator
+spec:
+  selector:
+    app: superbrain-coordinator
+  ports:
+    - protocol: TCP
+      port: {{ .Values.coordinator.service.port }}
+      targetPort: {{ .Values.coordinator.service.port }}
+      name: grpc
+    - protocol: TCP
+      port: {{ .Values.gossip.port }}
+      targetPort: {{ .Values.gossip.port }}
+      name: gossip
+    - protocol: TCP
+      port: {{ add .Values.coordinator.service.port 10 }}
+      targetPort: {{ add .Values.coordinator.service.port 10 }}
+      name: metrics

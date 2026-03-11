@@ -169,6 +169,39 @@ class TelemetryCollector:
                 "recent_errors": self._errors[-10:],
             }
 
+    def prometheus_report(self) -> str:
+        """Returns telemetry in Prometheus text format."""
+        r = self.report()
+        lines = [
+            "# HELP superbrain_uptime_seconds Total time the fabric has been active.",
+            "# TYPE superbrain_uptime_seconds counter",
+            f"superbrain_uptime_seconds {r['uptime_s']}",
+            "",
+            "# HELP superbrain_throughput_mbps_read Current read throughput in MB/s.",
+            "# TYPE superbrain_throughput_mbps_read gauge",
+            f"superbrain_throughput_mbps_read {r['throughput']['read_mbps']}",
+            "",
+            "# HELP superbrain_throughput_mbps_write Current write throughput in MB/s.",
+            "# TYPE superbrain_throughput_mbps_write gauge",
+            f"superbrain_throughput_mbps_write {r['throughput']['write_mbps']}",
+            "",
+            "# HELP superbrain_kv_cache_hit_ratio_total Cumulative hit ratio for KV cache.",
+            "# TYPE superbrain_kv_cache_hit_ratio_total gauge",
+            f"superbrain_kv_cache_hit_ratio_total {r['kv_cache']['hit_ratio']}",
+        ]
+        
+        for op, stats in r["operations"].items():
+            lines.extend([
+                f"# HELP superbrain_op_latency_ms_{op} Latency of {op} operations in ms.",
+                f"# TYPE superbrain_op_latency_ms_{op} gauge",
+                f'superbrain_op_latency_ms{{op="{op}", p="50"}} {stats["p50_ms"]}',
+                f'superbrain_op_latency_ms{{op="{op}", p="95"}} {stats["p95_ms"]}',
+                f'superbrain_op_latency_ms{{op="{op}", p="99"}} {stats["p99_ms"]}',
+                f'superbrain_op_count{{op="{op}"}} {stats["count"]}',
+            ])
+            
+        return "\n".join(lines)
+
     def print_report(self) -> None:
         """Pretty-print the telemetry report to stdout."""
         r = self.report()

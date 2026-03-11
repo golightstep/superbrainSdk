@@ -106,8 +106,24 @@ class _Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/api/stats":
             self._serve_json()
+        elif self.path == "/metrics":
+            self._serve_metrics()
         else:
             self._serve_html()
+
+    def _serve_metrics(self):
+        # Access telemetry through fabric
+        telem = getattr(self.fabric, "_telemetry", None)
+        if telem and hasattr(telem, "prometheus_report"):
+            body = telem.prometheus_report().encode()
+        else:
+            body = b"# Metrics not available."
+            
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain; version=0.0.4")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def _serve_json(self):
         data = self.fabric.stats()
@@ -202,6 +218,7 @@ class MonitorServer:
         t.start()
         print(f"[Monitor] 🌐 SuperBrain dashboard running at http://localhost:{self._port}")
         print(f"[Monitor]    JSON API:   http://localhost:{self._port}/api/stats")
+        print(f"[Monitor]    Metrics:    http://localhost:{self._port}/metrics")
 
     def stop(self) -> None:
         self._server.shutdown()

@@ -198,6 +198,7 @@ class AuditLogger:
         bytes_count: int,
         context_name: str = "",
         anomalous: bool = False,
+        **kwargs
     ) -> None:
         entry = {
             "ts": time.time(),
@@ -207,6 +208,7 @@ class AuditLogger:
             "bytes": bytes_count,
             "ctx": context_name,
             "anomalous": anomalous,
+            **kwargs
         }
         with self._lock:
             self._buffer.append(entry)

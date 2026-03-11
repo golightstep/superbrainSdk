@@ -198,6 +198,21 @@ enable_distributed_kv_cache(fabric, max_local_layers=4)
 # GPU VRAM full? Pages to cluster RAM instead of crashing.
 ```
 
+### 4. Tiered Architecture & Zero-Copy SHM (v0.7.0)
+SuperBrain now operates as an ultra-fast **L1 Shared Memory Tier** for agent architectures. 
+- **Coordinator Bypass**: Metadata is cached locally, eliminating the gRPC hop to the Coordinator for established pointers.
+- **Zero-Copy SHM**: When the SDK detects a co-located Memory Node (`127.0.0.1`), it seamlessly switches from gRPC streaming to direct `/dev/shm` memory-mapped file access.
+- **Microsecond Latency**: The Native Go core bypass achieves `< 15µs` latency, while the Python SDK currently hits `~9ms` (limited by CGo/ctypes FFI and string allocations).
+
+```python
+# L1 Shared Memory via Circular Buffer
+from superbrain.kv_pool import CircularBuffer
+
+# Pre-allocated allocation-free Ring Buffer for ultra-fast Market Data ingestion
+l1_stream = CircularBuffer(fabric, size=1024 * 1024)
+l1_stream.push(b"AAPL 150.00") # Uses direct memory-mapped I/O if local
+```
+
 ---
 
 ## 🗺️ Roadmap
@@ -208,10 +223,13 @@ enable_distributed_kv_cache(fabric, max_local_layers=4)
 | `v0.1.1` | Secure Fabric (mTLS, E2EE, Multi-language) | ✅ Shipped |
 | `v0.2.0` | **Phase 3: Automated AI Memory Controller** | ✅ Shipped |
 | `v0.2.1` | Zero-Copy & Coordinator Bypass (Perf Overhaul) | ✅ Shipped |
-| `v0.3.1` | **Semantic Memory (FAISS-Backed Distributed Vectors)** | ✅ **Current** |
-| `v0.4.0` | Raft Replication (Fault-Tolerant High Availability) | 🚧 Planned |
-| `v0.5.0` | NVMe Spilling (LRU eviction to disk — "Infinite Memory") | 🚧 Planned |
-| `v1.0.0` | Production-Grade, Full Observability Suite | 🔭 Vision |
+| `v0.3.1` | **Semantic Memory (FAISS-Backed Distributed Vectors)** | ✅ Shipped |
+| `v0.4.0` | Gossip & P2P Membership | ✅ Shipped |
+| `v0.5.0` | High Availability & Partition Tolerance | ✅ Shipped |
+| `v0.6.0` | Decentralized Observability & Metrics | ✅ Shipped |
+| `v0.7.0` | **Tiered Architecture (L1 Shared Memory) & SHM Locality Bypass** | ✅ **Current** |
+| `v0.8.0` | Raft Consensus Replication | 🚧 Planned |
+| `v0.9.0` | NVMe Spilling | 🚧 Planned |
 
 ---
 
@@ -222,4 +240,4 @@ Looking for enterprise-grade distributed memory solutions, dedicated support, or
 🚀 [**Join the Enterprise Waitlist**](https://binary.so/bC7zobC)
 
 ## License
-MIT License. See `LICENSE` for details.
+Business Source License (BSL) 1.1. See `LICENSE` for details.

@@ -1,13 +1,24 @@
 import ctypes
 import os
 import platform
+import logging
+import time
 from typing import Optional
+
+try:
+    import psutil
+    _PSUTIL_AVAILABLE = True
+except ImportError:
+    _PSUTIL_AVAILABLE = False
 
 class SuperbrainError(Exception):
     pass
 
 class Client:
-    def __init__(self, addrs: str, encryption_key: Optional[bytes] = None):
+    def __init__(self, addrs: str, encryption_key: Optional[bytes] = None, max_retries: int = 5, initial_backoff: float = 0.5, mem_threshold: float = 90.0):
+        self.addrs = addrs
+        self.encryption_key = encryption_key
+        self.mem_threshold = mem_threshold
         # Load the shared library
         lib_name = "libsuperbrain.dylib" if platform.system() == "Darwin" else "libsuperbrain.so"
         # Try to find it in the lib directory relative to the package
@@ -45,29 +56,73 @@ class Client:
         self._lib.SB_Free.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
         self._lib.SB_Free.restype = ctypes.c_char_p
 
-        # Initialize the client
-        if encryption_key:
-            if len(encryption_key) != 32:
-                 raise SuperbrainError("Encryption key must be exactly 32 bytes for AES-GCM-256")
-            key_ptr = (ctypes.c_ubyte * len(encryption_key)).from_buffer_copy(encryption_key)
-            res = self._lib.SB_NewClientWithEncryption(addrs.encode('utf-8'), key_ptr, len(encryption_key))
-        else:
-            res = self._lib.SB_NewClient(addrs.encode('utf-8'))
+        self._lib.SB_GetPointer.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+        self._lib.SB_GetPointer.restype = ctypes.c_char_p
 
-        res_str = res.decode('utf-8')
-        if res_str.startswith("error:"):
-            raise SuperbrainError(res_str)
+        # Initialize the client with retries
+        self.client_id = None
+        attempt = 0
+        backoff = initial_backoff
 
-        self.client_id = res.decode('utf-8').encode('utf-8')
+        while attempt < max_retries:
+            try:
+                if encryption_key:
+                    if len(encryption_key) != 32:
+                         raise SuperbrainError("Encryption key must be exactly 32 bytes for AES-GCM-256")
+                    key_ptr = (ctypes.c_ubyte * len(encryption_key)).from_buffer_copy(encryption_key)
+                    res = self._lib.SB_NewClientWithEncryption(addrs.encode('utf-8'), key_ptr, len(encryption_key))
+                else:
+                    res = self._lib.SB_NewClient(addrs.encode('utf-8'))
 
-    def register(self, agent_id: str):
-        res = self._lib.SB_Register(self.client_id, agent_id.encode('utf-8'))
-        if res:
-             res_str = res.decode('utf-8')
-             if res_str.startswith("error:"):
-                  raise SuperbrainError(res_str)
+                res_str = res.decode('utf-8')
+                if res_str.startswith("error:"):
+                    raise SuperbrainError(res_str)
+
+                self.client_id = res_str.encode('utf-8')
+                return # Success
+            except (SuperbrainError, Exception) as e:
+                attempt += 1
+                if attempt >= max_retries:
+                    raise SuperbrainError(f"Failed to connect to SuperBrain after {max_retries} attempts: {e}")
+                
+                import time
+                import logging
+                logging.warning(f"Connection attempt {attempt} failed: {e}. Retrying in {backoff}s...")
+                time.sleep(backoff)
+                backoff *= 2 # Exponential backoff
+
+    def register(self, agent_id: str, max_retries: int = 3):
+        attempt = 0
+        backoff = 1.0
+        while attempt < max_retries:
+            try:
+                res = self._lib.SB_Register(self.client_id, agent_id.encode('utf-8'))
+                if res:
+                    res_str = res.decode('utf-8')
+                    if res_str.startswith("error:"):
+                        raise SuperbrainError(res_str)
+                return # Success
+            except Exception as e:
+                attempt += 1
+                if attempt >= max_retries:
+                    raise SuperbrainError(f"Failed to register after {max_retries} attempts: {e}")
+                import time
+                time.sleep(backoff)
+                backoff *= 2
+
+    def _check_memory(self):
+        if not _PSUTIL_AVAILABLE:
+            return True
+        mem = psutil.virtual_memory()
+        if mem.percent > self.mem_threshold:
+            logging.warning(f"[SuperBrain] Memory critical: {mem.percent}% used. Throttling operation.")
+            time.sleep(0.1) # Micro-throttle
+            if mem.percent > 95.0:
+                 raise SuperbrainError(f"System OOM critical: {mem.percent}% RAM used. Blocking allocation.")
+        return True
 
     def allocate(self, size: int) -> str:
+        self._check_memory()
         res = self._lib.SB_Allocate(self.client_id, ctypes.c_uint64(size))
         res_str = res.decode('utf-8')
         if res_str.startswith("error:"):
@@ -75,6 +130,7 @@ class Client:
         return res_str
 
     def write(self, ptr_id: str, offset: int, data: bytes):
+        self._check_memory()
         data_ptr = (ctypes.c_ubyte * len(data)).from_buffer_copy(data)
         res = self._lib.SB_Write(self.client_id, ptr_id.encode('utf-8'), ctypes.c_uint64(offset), data_ptr, ctypes.c_uint64(len(data)))
         if res:
@@ -100,6 +156,14 @@ class Client:
 
     def free(self, ptr_id: str):
         res = self._lib.SB_Free(self.client_id, ptr_id.encode('utf-8'))
+        if res:
+            res_str = res.decode('utf-8')
+            if res_str.startswith("error:"):
+                raise SuperbrainError(res_str)
+
+    def attach(self, ptr_id: str):
+        """Metadata Sync: Pre-fetch pointer layout from coordinator and cache in Go layer."""
+        res = self._lib.SB_GetPointer(self.client_id, ptr_id.encode('utf-8'))
         if res:
             res_str = res.decode('utf-8')
             if res_str.startswith("error:"):

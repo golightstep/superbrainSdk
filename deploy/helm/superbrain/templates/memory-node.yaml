@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "superbrain.fullname" . }}-memory-node
+spec:
+  selector:
+    matchLabels:
+      app: superbrain-memory-node
+  template:
+    metadata:
+      labels:
+        app: superbrain-memory-node
+      annotations:
+        prometheus.io/scrape: "{{ .Values.monitoring.enabled }}"
+        prometheus.io/port: "{{ add .Values.memoryNode.port 10 }}"
+        prometheus.io/path: "/metrics"
+    spec:
+      hostNetwork: true # Often needed for mDNS on edge
+      containers:
+        - name: memory-node
+          image: "{{ .Values.memoryNode.image.repository }}:{{ .Values.memoryNode.image.tag }}"
+          args:
+            - "--id=$(NODE_NAME)"
+            - "--port={{ .Values.memoryNode.port }}"
+            - "--gossip-port={{ .Values.memoryNode.gossipPort }}"
+            - "--coordinator={{ include "superbrain.fullname" . }}-coordinator:{{ .Values.coordinator.service.port }}"
+            - "--memory={{ mul .Values.memoryNode.resources.limits.memory 1048576 }}" # Mi to Bytes
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          ports:
+            - containerPort: {{ .Values.memoryNode.port }}
+              name: grpc
+            - containerPort: {{ .Values.memoryNode.gossipPort }}
+              name: gossip
+            - containerPort: {{ add .Values.memoryNode.port 10 }}
+              name: metrics
+          resources:
+            {{- toYaml .Values.memoryNode.resources | nindent 12 }}
+          volumeMounts:
+            - name: shm
+              mountPath: /dev/shm
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory

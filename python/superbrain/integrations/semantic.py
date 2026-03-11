@@ -88,17 +88,23 @@ class SemanticMemoryStore:
     Manages a distributed vector store using SuperBrain and FAISS.
     """
 
-    def __init__(self, controller: Any, namespace: str = "default", dimension: int = 1536):
+    def __init__(self, controller: Any, namespace: str = "default", dimension: int = 1536, quantized: bool = False):
         if not _FAISS_AVAILABLE:
             logger.warning("[SemanticStore] FAISS is not installed. Falling back to basic numpy (NOT RECOMMENDED).")
             
         self._ctrl = controller
         self._namespace = namespace
         self._dimension = dimension
+        self._quantized = quantized
         
         # FAISS Index
         if _FAISS_AVAILABLE:
-            self._index = faiss.IndexFlatIP(dimension) # Inner Product for Cosine Similarity
+            if quantized:
+                # 8-bit scalar quantization for significant RAM savings on edge
+                self._index = faiss.IndexScalarQuantizer(dimension, faiss.ScalarQuantizer.QT_8bit, faiss.METRIC_INNER_PRODUCT)
+                logger.info("[SemanticStore] Using QT_8bit Scalar Quantization")
+            else:
+                self._index = faiss.IndexFlatIP(dimension) # Inner Product for Cosine Similarity
         else:
             self._index = None
             
@@ -134,6 +140,8 @@ class SemanticMemoryStore:
         norm_emb = norm_emb.reshape(1, -1).astype(np.float32)
 
         if self._index:
+            if not self._index.is_trained:
+                self._index.train(norm_emb)
             self._index.add(norm_emb)
         
         # Store metadata in SuperBrain
@@ -204,7 +212,8 @@ class SemanticMemoryStore:
         bundle = json.dumps({
             "index_ptr": self._index_ptr,
             "manifest_ptr": manifest_ptr,
-            "dim": self._dimension
+            "dim": self._dimension,
+            "quantized": self._quantized
         }).encode("utf-8")
         
         root_ptr = self._ctrl.allocate(len(bundle))
@@ -225,6 +234,7 @@ class SemanticMemoryStore:
         bundle = json.loads(raw_clean.decode("utf-8"))
         
         self._dimension = bundle["dim"]
+        self._quantized = bundle.get("quantized", False)
         
         # 1. Pull Index
         self._index = self._sb_index.pull(bundle["index_ptr"])

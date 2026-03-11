@@ -217,3 +217,42 @@ class AdvancedKVPool:
                                 self._ptr_index[ptr_id].byte_range = (0, len(compressed))
                 except Exception:
                     pass
+
+
+class CircularBuffer:
+    """
+    Fixed-size ring buffer in distributed memory.
+    Ideal for 'Real-time market data' where allocation overhead must be zero.
+    """
+
+    def __init__(self, fabric: Any, size: int, name: str = "rt-market-data"):
+        self._fabric = fabric
+        self._size = size
+        self._ptr_id = fabric.allocate(size)
+        self._head = 0
+        self._name = name
+        # Pre-attach to cache metadata for coordinator bypass
+        fabric._auto.client.attach(self._ptr_id)
+
+    def push(self, data: bytes):
+        """Write data to the ring buffer. Wraps around if full."""
+        if len(data) > self._size:
+            data = data[:self._size]
+
+        if self._head + len(data) <= self._size:
+            self._fabric._auto.write(self._ptr_id, self._head, data)
+            self._head = (self._head + len(data)) % self._size
+        else:
+            # Wrap around write
+            part1_len = self._size - self._head
+            self._fabric._auto.write(self._ptr_id, self._head, data[:part1_len])
+            self._fabric._auto.write(self._ptr_id, 0, data[part1_len:])
+            self._head = len(data) - part1_len
+
+    def read_all(self) -> bytes:
+        """Read the entire buffer content."""
+        return self._fabric.read(self._ptr_id, 0, self._size)
+
+    @property
+    def ptr_id(self) -> str:
+        return self._ptr_id

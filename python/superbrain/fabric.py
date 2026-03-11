@@ -79,18 +79,24 @@ class DistributedContextFabric:
         self._prefetcher = MarkovPrefetcher()
         self._router = ContextRouter()
         self._telemetry = TelemetryCollector()
-        self._kv_pool = AdvancedKVPool(self)
-        self._allocator = SelfTuningAllocator(self, telemetry=self._telemetry)
+        self._kv_pool = AdvancedKVPool(self._auto)
+        self._allocator = SelfTuningAllocator(self._auto, telemetry=self._telemetry)
 
         # --- Security layer ---
         self._anomaly = AnomalyDetector(z_threshold=max_anomaly_z)
         self._keys = KeyManager(master_secret=encryption_key)
         self._audit = AuditLogger(log_file=audit_log)
 
-        # --- Context registry ---
+        # --- Segment registry ---
         self._contexts: Dict[str, SharedContext] = {}
+        self._local_overflow: Dict[str, bytes] = {} # ptr_id -> data (for partition tolerance)
+        self._disconnected_mode = False
+        
+        # --- Synchronization loop ---
+        self._sync_thread = threading.Thread(target=self._background_sync, daemon=True, name="sb-sync")
+        self._sync_thread.start()
 
-        logger.info("[DistributedContextFabric] Ready — all Phase 3 subsystems online ✓")
+        logger.info("[DistributedContextFabric] Ready — all Phase 3 subsystems online ✓ (Edge-Hardened)")
 
     # ------------------------------------------------------------------
     # Context Management
@@ -151,19 +157,57 @@ class DistributedContextFabric:
     def write(self, ptr_id: str, offset: int, data: bytes, agent_id: str = "system") -> None:
         alert = self._anomaly.observe(agent_id, len(data), ptr_id)
         with self._telemetry.measure("write", len(data)):
-            self._auto.write(ptr_id, offset, data)
+            try:
+                self._auto.write(ptr_id, offset, data)
+                self._disconnected_mode = False
+            except Exception as e:
+                logger.warning("[fabric] Partition detected! Falling back to local buffer for %s", ptr_id[:8])
+                self._local_overflow[ptr_id] = data
+                self._disconnected_mode = True
+                
         self._tracker.record(ptr_id, len(data))
         self._prefetcher.observe(ptr_id)
-        self._audit.log(agent_id, "write", ptr_id, len(data), anomalous=alert is not None)
+        self._audit.log(agent_id, "write", ptr_id, len(data), anomalous=alert is not None, local_fallback=self._disconnected_mode)
 
     def read(self, ptr_id: str, offset: int, length: int, agent_id: str = "system") -> bytes:
         # Trigger predictor-based prefetch in background
         self._start_prefetch(ptr_id)
         with self._telemetry.measure("read", length):
-            data = self._auto.read(ptr_id, offset, length)
+            try:
+                data = self._auto.read(ptr_id, offset, length)
+                self._disconnected_mode = False
+            except Exception:
+                # Try local fallback
+                if ptr_id in self._local_overflow:
+                    logger.debug("[fabric] Reading %s from local overflow buffer", ptr_id[:8])
+                    data = self._local_overflow[ptr_id]
+                else:
+                    raise
         self._tracker.record(ptr_id, len(data))
-        self._audit.log(agent_id, "read", ptr_id, len(data))
+        self._audit.log(agent_id, "read", ptr_id, len(data), local_cache_hit=(ptr_id in self._local_overflow))
         return data
+
+    def _background_sync(self):
+        """Periodically tries to flush local segments back to the cluster when reconnected."""
+        while True:
+            time.sleep(10)
+            if not self._local_overflow:
+                continue
+                
+            logger.info("[sync] Attempting to sync %d local segments to cluster...", len(self._local_overflow))
+            to_remove = []
+            for ptr_id, data in list(self._local_overflow.items()):
+                try:
+                    self._auto.write(ptr_id, 0, data)
+                    to_remove.append(ptr_id)
+                except Exception:
+                    break # Still disconnected
+            
+            for ptr_id in to_remove:
+                del self._local_overflow[ptr_id]
+            
+            if to_remove:
+                logger.info("[sync] Successfully synced %d segments ✅", len(to_remove))
 
     def free(self, ptr_id: str) -> None:
         self._allocator.free(ptr_id)
