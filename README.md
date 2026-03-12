@@ -11,9 +11,13 @@ The high-performance distributed memory fabric for AI agents.
 - **Zero-Copy Transport**: Direct memory access via `mmap` for local agents.
 - **Microsecond Latency**: Near-hardware speed for co-located workloads.
 
-### 📦 Installation
-- **Python**: `pip install superbrain-sdk`
-- **Node.js**: `npm install superbrain-distributed-sdk`
+### 📦 Installation & Registry Links
+- **Python**: [`superbrain-sdk`](https://pypi.org/project/superbrain-sdk/) 
+  - `pip install superbrain-sdk`
+  - [Python README](./python/README.md)
+- **Node.js**: [`superbrain-distributed-sdk`](https://www.npmjs.com/package/superbrain-distributed-sdk)
+  - `npm install superbrain-distributed-sdk`
+  - [Node.js README](./node/README.md)
 - **Go**: `go get github.com/anispy211/superbrainSdk`
 
 ## Installation
