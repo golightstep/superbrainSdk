@@ -6,6 +6,15 @@ The high-performance distributed memory fabric for AI agents.
 
 📺 **[Watch the Video Demo](https://www.youtube.com/watch?v=TzNxpk5PSXM)** | 🚀 **[Explore the SDK Demo Repo](https://github.com/golightstep/superbrainSDKDemo)** | 🕸️ **[Live Visual Dashboard](https://github.com/golightstep/superbrainSDKDemo#dashboard)**
 
+
+
+Checkout Demo App:
+
+https://github.com/golightstep/superbrainSDKDem
+
+1. CrewAI + Superbrain
+2. Redis + Superbrain
+
 ### ⚡ Performance Overhaul (v0.7.7)
 - **Coordinator Bypass**: 10x faster metadata resolution via SDK-side caching.
 - **Zero-Copy Transport**: Direct memory access via `mmap` for local agents.
