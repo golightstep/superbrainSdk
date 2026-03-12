@@ -1,10 +1,25 @@
-# 🧠 superbrain-sdk v0.7.3 — Python
+# 🧠 superbrain-sdk v0.7.4 — Python
 
 [![PyPI version](https://badge.fury.io/py/superbrain-sdk.svg)](https://badge.fury.io/py/superbrain-sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Demo Code](https://img.shields.io/badge/Demo-Code-blue.svg)](https://github.com/anispy211/superbrainSDKDemo)
 
-> **The Distributed RAM Fabric for AI Agents** — Share memory across machines at microsecond speeds. Now with **Phase 3**: Automated AI Memory Controller, LangChain & PyTorch integration, and self-healing KV cache pooling.
+SuperBrain is a high-performance distributed memory fabric that allows multiple AI agents to share state and context at microsecond latencies.
+
+## 🚀 Viral Integration (CrewAI)
+The easiest way to share context across your CrewAI swarm. Just decorate your task creation:
+
+```python
+from superbrain import shared_context
+from crewai import Agent, Task
+
+@shared_context("market-research")
+def create_task(ctx, researcher):
+    # This task's context is now live on the SuperBrain fabric
+    return Task(description="Analyze 2024 AI trends", agent=researcher)
+```
+ Now with **Phase 3**: Automated AI Memory Controller, LangChain & PyTorch integration, and self-healing KV cache pooling.
 
 ---
 

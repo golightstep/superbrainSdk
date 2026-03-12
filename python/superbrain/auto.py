@@ -381,6 +381,30 @@ class AutoMemoryController:
     def client(self) -> Client:
         return self._client
 
-    def __repr__(self) -> str:
-        addrs = [c.name for c in self._contexts.values()]
-        return f"<AutoMemoryController contexts={addrs}>"
+# ---------------------------------------------------------------------------
+# Global Convenience Functions
+# ---------------------------------------------------------------------------
+
+_DEFAULT_CONTROLLER: Optional[AutoMemoryController] = None
+_INIT_LOCK = threading.Lock()
+
+def _get_controller() -> AutoMemoryController:
+    global _DEFAULT_CONTROLLER
+    with _INIT_LOCK:
+        if _DEFAULT_CONTROLLER is None:
+            # We don't catch errors here to let the user know if discovery fails
+            _DEFAULT_CONTROLLER = AutoMemoryController()
+        return _DEFAULT_CONTROLLER
+
+def shared_context(name: str) -> Callable:
+    """
+    Global high-level decorator for distributed memory context.
+    Automatically initializes a default controller on first use.
+
+    Example::
+
+        @shared_context("my-task")
+        def process(ctx, ...):
+            ctx.write("data", "...")
+    """
+    return _get_controller().shared_context(name)
