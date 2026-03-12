@@ -10,7 +10,7 @@ The high-performance distributed memory fabric for AI agents.
 
 Checkout Demo App:
 
-https://github.com/golightstep/superbrainSDKDem
+https://github.com/golightstep/superbrainSDKDemo
 
 1. CrewAI + Superbrain
 2. Redis + Superbrain
