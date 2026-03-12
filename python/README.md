@@ -1,4 +1,4 @@
-# 🧠 superbrain-sdk v0.7.2 — Python
+# 🧠 superbrain-sdk v0.7.3 — Python
 
 [![PyPI version](https://badge.fury.io/py/superbrain-sdk.svg)](https://badge.fury.io/py/superbrain-sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

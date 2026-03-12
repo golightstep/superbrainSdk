@@ -4,9 +4,10 @@ The high-performance distributed memory fabric for AI agents.
 
 🔥 **[Join the Enterprise Waitlist](https://binary.so/bC7zobC)** for managed fleets, GPUDirect RDMA access, and dedicated support. 
 
-📺 **[Watch the SuperBrain SDK Demo](https://www.youtube.com/watch?v=TzNxpk5PSXM)**
+📺 **[Watch the SuperBrain SDK Demo Video](https://www.youtube.com/watch?v=TzNxpk5PSXM)**
+🚀 **[Explore the SDK Demo Code Repository](https://github.com/anispy211/superbrainSDKDemo)**
 
-### ⚡ Performance Overhaul (v0.7.2)
+### ⚡ Performance Overhaul (v0.7.3)
 - **Coordinator Bypass**: 10x faster metadata resolution via SDK-side caching.
 - **Zero-Copy Transport**: Direct memory access via `mmap` for local agents.
 - **Microsecond Latency**: Near-hardware speed for co-located workloads.
