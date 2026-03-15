@@ -1,6 +1,6 @@
-# Superbrain SDK v0.7.7 — Comprehensive Developer Guide
+# Superbrain SDK v3.0.0-cognitive — Comprehensive Developer Guide
 
-Welcome to the Superbrain SDK! This guide covers all APIs across Go, Python, and TypeScript — from the core distributed memory primitives (**v0.1.x**) to the **Tiered Architecture and Zero-Copy SHM bypass** introduced in v0.7.0.
+Welcome to the Superbrain SDK! This guide covers all APIs across Go, Python, and TypeScript — from the core distributed memory primitives to the **Active Cognitive Architecture** introduced in the v3.0.0 release.
 
 ## 🚀 Quick Installation
 - **Demo Code Repository**: [anispy211/superbrainSDKDemo](https://github.com/anispy211/superbrainSDKDemo)
@@ -17,7 +17,7 @@ npm install superbrain-distributed-sdk
 
 ### Go
 ```bash
-go get github.com/anispy211/superbrainSdk
+go get github.com/golightstep/superbrainSdk
 ```
 
 ## Table of Contents

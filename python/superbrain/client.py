@@ -60,6 +60,12 @@ class Client:
         self._lib.SB_GetPointer.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
         self._lib.SB_GetPointer.restype = ctypes.c_char_p
 
+        self._lib.SB_WriteCognitive.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint64, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_uint64, ctypes.c_float, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+        self._lib.SB_WriteCognitive.restype = ctypes.c_char_p
+
+        self._lib.SB_ResolveConflict.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_uint64, ctypes.c_char_p, ctypes.POINTER(ctypes.POINTER(ctypes.c_ubyte)), ctypes.POINTER(ctypes.c_uint64)]
+        self._lib.SB_ResolveConflict.restype = ctypes.c_char_p
+
         # Initialize the client with retries
         self.client_id = None
         attempt = 0
@@ -145,6 +151,26 @@ class Client:
             if res_str.startswith("error:"):
                 raise SuperbrainError(res_str)
 
+    def write_cognitive(self, ptr_id: str, offset: int, data: bytes, liveliness: float, intent: str, summary: str, tag: str):
+        """Active Memory Write: Include semantic metadata for the Thalamus and Nervous System."""
+        self._check_memory()
+        data_ptr = (ctypes.c_ubyte * len(data)).from_buffer_copy(data)
+        res = self._lib.SB_WriteCognitive(
+            self.client_id, 
+            ptr_id.encode('utf-8'), 
+            ctypes.c_uint64(offset), 
+            data_ptr, 
+            ctypes.c_uint64(len(data)),
+            ctypes.c_float(liveliness),
+            intent.encode('utf-8'),
+            summary.encode('utf-8'),
+            tag.encode('utf-8')
+        )
+        if res:
+            res_str = res.decode('utf-8')
+            if res_str.startswith("error:"):
+                raise SuperbrainError(res_str)
+
     def read(self, ptr_id: str, offset: int, length: int) -> bytes:
         out_data = ctypes.POINTER(ctypes.c_ubyte)()
         out_len = ctypes.c_uint64(0)
@@ -160,6 +186,31 @@ class Client:
             return b""
         data = ctypes.string_at(out_data, out_len.value)
         return data
+
+    def resolve_conflict(self, ptr_id: str, new_data: bytes, intent: str) -> bytes:
+        """The Consistency Guard: Attempt to merge data based on semantic intent."""
+        out_data = ctypes.POINTER(ctypes.c_ubyte)()
+        out_len = ctypes.c_uint64(0)
+        new_data_ptr = (ctypes.c_ubyte * len(new_data)).from_buffer_copy(new_data)
+        
+        res = self._lib.SB_ResolveConflict(
+            self.client_id,
+            ptr_id.encode('utf-8'),
+            new_data_ptr,
+            ctypes.c_uint64(len(new_data)),
+            intent.encode('utf-8'),
+            ctypes.byref(out_data),
+            ctypes.byref(out_len)
+        )
+
+        if res:
+            res_str = res.decode('utf-8')
+            if res_str.startswith("error:"):
+                raise SuperbrainError(res_str)
+
+        if not out_data:
+            return b""
+        return ctypes.string_at(out_data, out_len.value)
 
     def free(self, ptr_id: str):
         res = self._lib.SB_Free(self.client_id, ptr_id.encode('utf-8'))

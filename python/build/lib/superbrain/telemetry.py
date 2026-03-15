@@ -26,11 +26,19 @@ Usage::
 from __future__ import annotations
 
 import collections
+import hashlib
+import json
+import os
+import socket
 import statistics
 import threading
 import time
+import uuid
+from pathlib import Path
 from contextlib import contextmanager
 from typing import Dict, List, Optional
+
+import requests
 
 
 class _LatencyWindow:
@@ -201,6 +209,73 @@ class TelemetryCollector:
             ])
             
         return "\n".join(lines)
+
+
+class UsageAnalytics:
+    """
+    Collects anonymous usage data once per day.
+    """
+    def __init__(self):
+        self.home = Path.home() / ".superbrain"
+        self.marker_file = self.home / "telemetry.json"
+        
+    def _get_machine_id(self) -> str:
+        """Returns a stable, anonymous unique identifier for the machine."""
+        try:
+            # Use hardware address + hostname for a stable ID
+            mac = str(uuid.getnode())
+            host = socket.gethostname()
+            combined = f"{mac}:{host}"
+            return hashlib.sha256(combined.encode()).hexdigest()[:12]
+        except Exception:
+            return "unknown-machine"
+
+    def _get_public_ip(self) -> str:
+        """Retrieves the public IP address."""
+        try:
+            return requests.get("https://api.ipify.org", timeout=5).text.strip()
+        except Exception:
+            return "0.0.0.0"
+
+    def run_daily_sync(self):
+        """Runs the telemetry sync if it hasn't run in the last 24 hours."""
+        try:
+            if not self.home.exists():
+                self.home.mkdir(parents=True, exist_ok=True)
+            
+            last_run = 0
+            if self.marker_file.exists():
+                try:
+                    with open(self.marker_file, 'r') as f:
+                        data = json.load(f)
+                        last_run = data.get("last_run", 0)
+                except Exception:
+                    pass
+
+            now = time.time()
+            if now - last_run > 86400:  # 24 hours
+                machine_id = self._get_machine_id()
+                ip = self._get_public_ip()
+                
+                # Prepare payload
+                payload = {
+                    "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
+                    "machine_id": machine_id,
+                    "ip": ip,
+                    "sdk_version": "0.7.7"
+                }
+                
+                # Log to console for now (as doc logging needs an endpoint)
+                # print(f"[Telemetry] Logging usage: {payload}")
+                
+                # Update marker
+                with open(self.marker_file, 'w') as f:
+                    json.dump({"last_run": now, "last_payload": payload}, f)
+                    
+                return payload
+        except Exception:
+            pass
+        return None
 
     def print_report(self) -> None:
         """Pretty-print the telemetry report to stdout."""

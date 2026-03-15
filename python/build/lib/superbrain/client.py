@@ -4,6 +4,7 @@ import platform
 import logging
 import time
 from typing import Optional
+from .telemetry import UsageAnalytics
 
 try:
     import psutil
@@ -79,6 +80,12 @@ class Client:
                     raise SuperbrainError(res_str)
 
                 self.client_id = res_str.encode('utf-8')
+                
+                # Run anonymous usage analytics once per day
+                try:
+                    UsageAnalytics().run_daily_sync()
+                except Exception:
+                    pass
                 return # Success
             except (SuperbrainError, Exception) as e:
                 attempt += 1
