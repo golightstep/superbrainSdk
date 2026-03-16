@@ -163,18 +163,13 @@ ctx.read("state")                  # read from any machine
 
 ## 🗺️ Roadmap
 
-| Version | Milestone | Status |
-|---------|-----------|--------|
-| `v0.1.0` | Core Distributed RAM | ✅ Shipped |
-| `v0.1.1` | Secure Fabric (mTLS + E2EE) | ✅ Shipped |
-| `v0.2.0` | **Phase 3: Automated AI Memory Controller** | ✅ Shipped |
-| `v0.3.1` | Semantic Memory (FAISS-Backed Distributed Vectors) | ✅ Shipped |
-| `v0.4.0` | Gossip & P2P Membership | ✅ Shipped |
-| `v0.5.0` | High Availability & Partition Tolerance | ✅ Shipped |
-| `v0.6.0` | Decentralized Observability & Metrics | ✅ Shipped |
-| `v0.7.1` | **Tiered Architecture & Zero-Copy SHM Bypass** | ✅ **Current** |
-| `v0.8.0` | Raft Consensus Replication | ✅ Shipped |
-| `v0.9.0` | NVMe Spilling | ✅ Shipped |
+| Phase | Milestone | Features | Status |
+|-------|-----------|----------|--------|
+| **1** | **Distributed Fabric** | Multi-node RAM, Block I/O, P2P Gossip | ✅ Shipped |
+| **2** | **Secure Fabric** | mTLS, E2EE (AES-GCM), CA Authority | ✅ Shipped |
+| **3** | **Active Intelligence** | Cognitive Smart Layers, Durable WAL, Decay, FAISS | 🚀 **Current** |
+| **4** | **Hardware Acceleration** | GPUDirect RDMA, NVMe Spilling (Cold Storage) | 🏗️ Planned |
+| **5** | **Agent Harmony** | Raft-based Consensus Mirroring, Auto-Discovery | 🏗️ Planned |
 
 ---
 

@@ -49,10 +49,12 @@ graph TD
     B -->|"client.allocate()"| C["🔴 Level 1: Raw Client\nManual free() required"]
     B -->|"ctx.write(key, data)"| D["🟢 Level 2: SharedContext\nNo free() — ever"]
     B -->|"fabric.store_kv_cache()"| E["🟢 Level 3: KV Cache Pool\nNo free() — auto-evicted"]
+    B -->|"./bin/node --persistence"| F["🟣 Level 4: Durable Tier\nWAL-backed storage"]
 
     style C fill:#ffcccc,stroke:#cc0000,color:#000
     style D fill:#ccffcc,stroke:#00aa00,color:#000
     style E fill:#ccffcc,stroke:#00aa00,color:#000
+    style F fill:#e1bee7,stroke:#4a148c,color:#000
 ```
 
 ---
@@ -154,6 +156,23 @@ prompt  = ctx.read("prompt")
 history = ctx.read("history")
 # No free() anywhere ✅
 ```
+
+---
+
+### 🟣 Level 4 — Durable Persistence (WAL)
+
+The final tier of the Superbrain fabric. While Levels 1-3 live in RAM, **Level 4** ensures that data survives a total cluster power failure or node crash.
+
+- **Zero Impact**: Uses a "Write-Behind" pattern. Agents write to the node's local WAL (Write-Ahead Log) instantly, and the node persists to disk/DB in the background.
+- **Auto-Rehydration**: If an agent requests a pointer that has been evicted from RAM to L3, the node transparently reloads it.
+
+**Setup (Node Side):**
+```bash
+./bin/node --persistence-provider=filestore \
+           --persistence-config='{"path":"./data", "wal_sync_mode":"always"}'
+```
+**SDK Side:**
+No changes needed. Standard `Write` and `WriteCognitive` operations automatically leverage the durable tier if configured on the node.
 
 ---
 
@@ -703,15 +722,10 @@ l1_stream.push(b"TICK: TSLA 210.50")
 
 ## Roadmap
 
-| Version | Milestone | Status |
-|---------|-----------|--------|
-| `v0.1.0` | Core Distributed RAM (Allocate/Read/Write/Free) | ✅ Shipped |
-| `v0.1.1` | Secure Fabric (mTLS, E2EE, Pub/Sub) | ✅ Shipped |
-| `v0.2.0` | **Phase 3: Automated AI Memory Controller** | ✅ Shipped |
-| `v0.3.1` | **Semantic Memory (FAISS-Backed Distributed Vectors)** | ✅ Shipped |
-| `v0.4.0` | Gossip & P2P Membership | ✅ Shipped |
-| `v0.5.0` | High Availability & Partition Tolerance | ✅ Shipped |
-| `v0.6.0` | Decentralized Observability & Metrics | ✅ Shipped |
-| `v0.7.0` | **Tiered Architecture (L1 Shared Memory) & SHM Locality Bypass** | ✅ **Current** |
-| `v0.8.0` | Raft Consensus Replication | ✅ Shipped |
-| `v0.9.0` | NVMe Spilling | ✅ Shipped |
+| Phase | Milestone | Features | Status |
+|-------|-----------|----------|--------|
+| **1** | **Distributed Fabric** | Multi-node RAM, Block I/O, P2P Gossip | ✅ Shipped |
+| **2** | **Secure Fabric** | mTLS, E2EE (AES-GCM), CA Authority | ✅ Shipped |
+| **3** | **Active Intelligence** | Cognitive Smart Layers, Durable WAL, Decay, FAISS | 🚀 **Current** |
+| **4** | **Hardware Acceleration** | GPUDirect RDMA, NVMe Spilling (Cold Storage) | 🏗️ Planned |
+| **5** | **Agent Harmony** | Raft-based Consensus Mirroring, Auto-Discovery | 🏗️ Planned |

@@ -11,13 +11,15 @@ SuperBrain is a next-generation **Active Memory & Cognitive Architecture** for A
 - **The Thalamus**: Automatic summarization for fast metadata scanning.
 - **The Consistency Guard**: Semantic locking to prevent logical race conditions.
 - **The Forgetter**: Built-in decay and eviction for efficient memory lifecycle.
+- **Tiered Storage (NEW)**: Durable L3 persistence backed by WAL for hard-crash recovery.
 
-📺 **[Watch the Video Demo](https://www.youtube.com/watch?v=TzNxpk5PSXM)** | 🚀 **[Explore the SDK Demo Repo](https://github.com/golightstep/superbrainSDKDemo)** | 🕸️ **[Live Visual Dashboard](https://github.com/golightstep/superbrainSDKDemo#dashboard)**
+📺 **[Watch the Video Demo](https://www.youtube.com/watch?v=TzNxpk5PSXM)** | 🚀 **[Explore the SDK Demo Repo](https://github.com/anispy211/superbrainSDKDemo)** | 🕸️ **[Live Visual Dashboard](https://github.com/anispy211/superbrainSDKDemo#dashboard)**
 
 **Checkout Demo App:**
-https://github.com/golightstep/superbrainSDKDemo
+https://github.com/anispy211/superbrainSDKDemo
 1. CrewAI + Superbrain
-2. Redis + Superbrain
+2. Durable WAL + Superbrain
+3. Redis + Superbrain
 
 ### 📦 Installation
 - **Python**: `pip install superbrain-sdk`
@@ -74,11 +76,11 @@ Enrolls the agent in the **Secure Fabric** via mTLS. Automatically generates a k
 
 ---
 
-| Version | Milestone | Status |
-|---------|-----------|--------|
-| `v1.0.0` | **Core Shared RAM Fabric** | ✅ Shipped |
-| `v2.0.0` | **Secure Fabric (mTLS + E2EE)** | ✅ Shipped |
-| `v3.0.0` | **Cognitive Architecture (Active Memory)** | 🚀 **Current** |
+| Phase | Milestone | Features | Status |
+|-------|-----------|----------|--------|
+| **1** | **Distributed Fabric** | Multi-node RAM, Block I/O | ✅ Shipped |
+| **2** | **Secure Fabric** | mTLS, E2EE (AES-GCM), CA | ✅ Shipped |
+| **3** | **Active Intelligence** | Cognitive Smart Layers, Durable WAL, Decay | 🚀 **Current** |
 
 ---
 
