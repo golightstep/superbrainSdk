@@ -167,12 +167,30 @@ The final tier of the Superbrain fabric. While Levels 1-3 live in RAM, **Level 4
 - **Auto-Rehydration**: If an agent requests a pointer that has been evicted from RAM to L3, the node transparently reloads it.
 
 **Setup (Node Side):**
+Superbrain supports multiple durable backends. Configure them via the `--persistence-config` JSON flag:
+
 ```bash
+# A: Local FileStore (Durable WAL enabled by default)
 ./bin/node --persistence-provider=filestore \
            --persistence-config='{"path":"./data", "wal_sync_mode":"always"}'
+
+# B: Redis-Backed Tier (Centralized Offloading)
+./bin/node --persistence-provider=redis \
+           --persistence-config='{"addr":"localhost:6379", "db":0}'
+
+# C: Postgres-Backed Tier (Relational Integration)
+./bin/node --persistence-provider=postgres \
+           --persistence-config='{"dsn":"postgres://user:pass@host:5432/db"}'
 ```
-**SDK Side:**
-No changes needed. Standard `Write` and `WriteCognitive` operations automatically leverage the durable tier if configured on the node.
+
+**SDK Interaction Mechanics:**
+The SDK remains unaware of the storage backend. When you call `client.Write()`:
+1. Data is written to local node RAM (10μs).
+2. Node appends task to the **Write-Ahead Log** (WAL).
+3. Node acknowledges write to SDK.
+4. Background thread eventually flushes the block to the configured provider (File/Redis/PG).
+
+If a block is evicted from RAM but requested by an agent, the node transparently **rehydrates** it from the provider before returning the data to the SDK.
 
 ---
 

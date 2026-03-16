@@ -1,5 +1,9 @@
 # SuperBrain SDK: The Cognitive Memory Fabric 🧠🚀
 
+> [!IMPORTANT]
+> ### 📣 MEGA-ANNOUNCEMENT: Durable Persistence & WAL is Here!
+> The Superbrain fabric is no longer just "volatile RAM". We've introduced a production-grade **Durable Tier** allowing your agent's memory to survive node crashes and cluster restarts with **zero performance impact** on the memory bus. [**Read the Persistence Guide →**](./DOCUMENTATION.md#level-4-durable-persistence)
+
 SuperBrain is a next-generation **Active Memory & Cognitive Architecture** for AI agents. It goes beyond passive storage to provide a self-tuning, event-driven memory layer that scales to gigabytes across your cluster.
 
 🔥 **v3.0.0-cognitive: The Intelligence Update** is now live!
