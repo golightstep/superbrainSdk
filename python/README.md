@@ -25,6 +25,40 @@ def create_task(ctx, researcher):
 
 ---
 
+## ⚡ v3.0.0-cognitive: The Intelligence Update
+
+This release transforms Superbrain from a passive memory pool into an **Active Cognitive Architecture**.
+
+### Key Highlights:
+- **Durable L3 Tier**: Memory blocks can now be persisted to FileStore, Redis, or Postgres via a configurable "Write-Behind" engine.
+- **Write-Ahead Log (WAL)**: Zero-data-loss guarantee for asynchronous writes, even during total node failure.
+- **Cognitive Smart Layers**: Built-in memory decay (Liveliness) and semantic triggers.
+- **Microsecond Bypass**: Detection of local nodes enables 13μs direct SHM access.
+
+### 💾 Example: Durable Cognitive Write
+```python
+from superbrain import Client
+
+client = Client("localhost:50050")
+ptr = client.allocate(10 * 1024 * 1024)
+
+# Write with 0.9 liveliness (high importance) and semantic intent
+client.write_cognitive(
+    ptr, 
+    offset=0, 
+    data=b"Crucial Agent Reasonings...",
+    liveliness=0.9,
+    intent="Strategic Planning",
+    summary="User goals for Q3",
+    tag="Sensitive"
+)
+
+# If the node is configured with --persistence-provider=filestore,
+# this data is now mirrored to the WAL and durable disk!
+```
+
+---
+
 ## 🚀 What Is SuperBrain?
 
 SuperBrain is a **distributed RAM network** where multiple AI agents on different machines share memory via 36-byte UUID pointers — instead of copying massive JSON blobs over slow APIs.

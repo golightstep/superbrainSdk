@@ -11,6 +11,39 @@
 
 🔥 **v3.0.0-cognitive: The Intelligence Update** is now live!
 
+---
+
+## ⚡ v3.0.0-cognitive Highlights
+
+This major release transforms the Node.js SDK into a microsecond-latency **Active Memory Tier**.
+
+### Key Highlights:
+- **Durable Persistence**: Full support for WAL-backed storage nodes (FileStore/Redis/Postgres).
+- **Coordinator Bypass**: 100x faster pointer resolution via local metadata caching.
+- **Semantic Triggers**: Subscribe to memory offsets and get notified when agents write with specific intents.
+- **Zero-Copy SHM**: Optimized FFI for direct `/dev/shm` access on Linux.
+
+### 🧠 Example: Semantic Memory Trigger
+```typescript
+import { SuperbrainClient } from 'superbrain-distributed-sdk';
+
+const client = new SuperbrainClient('localhost:50050');
+
+// Subscribe to "User Intent" updates across the whole cluster
+client.semanticSubscribe('User Intent', (notify) => {
+    console.log(`🧠 Neural Trigger: ${notify.snippet}`);
+    console.log(`Intent detected: ${notify.intent}`);
+});
+
+// Write with cognitive enrichment
+await client.writeCognitive(ptr, 0, data, {
+    liveliness: 0.8,
+    intent: 'User Intent',
+    summary: 'Updating user preference profile',
+    tag: 'Preference'
+});
+```
+
 ## 📦 Installation
 
 ```bash
