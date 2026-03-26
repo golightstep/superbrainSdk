@@ -1,7 +1,7 @@
 {
-  "name": "superbrain-distributed-sdk",
-  "version": "3.0.2",
-  "description": "Premium High-Performance Distributed Memory SDK for AI Agents",
+  "name": "superbrain-fabric-sdk",
+  "version": "5.1.0",
+  "description": "Superbrain Fabric v5.1 — The Soul Expansion: LCC, Memory History, Knowledge Graph & MIRROR stability.",
   "main": "index.js",
   "types": "index.d.ts",
   "repository": {
@@ -15,13 +15,14 @@
   "keywords": [
     "distributed-memory",
     "ai-agents",
-    "kv-cache",
+    "cognitive-fabric",
+    "layered-compression",
+    "memory-history",
+    "knowledge-graph",
+    "mirror-tier",
     "langchain",
-    "pytorch",
     "mcp",
     "grpc",
-    "performance",
-    "context-sharing",
     "llm",
     "rag"
   ],

@@ -3,13 +3,13 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "superbrain-sdk"
-version = "3.0.2"
-description = "High-performance distributed memory fabric for AI agents."
+name = "superbrain-fabric-sdk"
+version = "5.1.0"
+description = "Superbrain Fabric v5.1 — The Soul Expansion: LCC, Memory History, Knowledge Graph & MIRROR stability."
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "Business Source License 1.1"}
-keywords = ["distributed-systems", "shared-memory", "ai-agents", "performance", "memory-fabric"]
+keywords = ["distributed-systems", "cognitive-fabric", "layered-compression", "memory-history", "knowledge-graph", "ai-agents", "llm", "langchain", "mcp"]
 authors = [{name = "anispy211", email = "anispy211@gmail.com"}]
 dependencies = ["numpy", "faiss-cpu"]
 
