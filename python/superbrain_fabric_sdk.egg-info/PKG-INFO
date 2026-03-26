@@ -1,0 +1,98 @@
+Metadata-Version: 2.4
+Name: superbrain-fabric-sdk
+Version: 5.1.0
+Summary: Superbrain Fabric v5.1 — The Soul Expansion: LCC, Memory History, Knowledge Graph & MIRROR stability.
+Author: Anispy
+Author-email: anispy211 <anispy211@gmail.com>
+License: Business Source License 1.1
+Project-URL: Homepage, https://github.com/golightstep/superbrainSdk
+Project-URL: Bug Tracker, https://github.com/golightstep/superbrainSdk/issues
+Keywords: distributed-systems,cognitive-fabric,layered-compression,memory-history,knowledge-graph,ai-agents,llm,langchain,mcp
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: numpy
+Requires-Dist: faiss-cpu
+Provides-Extra: semantic
+Requires-Dist: sentence-transformers; extra == "semantic"
+Dynamic: author
+
+# Superbrain Fabric Python SDK (V5.1) 🧠✨
+
+**Superbrain Fabric** is a high-performance, distributed cognitive RAM fabric. This SDK allows your AI agents to treat memory as an active, self-reflecting participant in their reasoning loops.
+
+---
+
+## 💎 The Soul Expansion (V5.1 Breakthroughs)
+
+V5.1 transitions Superbrain Fabric from a fast storage layer into a **Cognitive Organism**.
+
+### 📉 Layered Cognitive Compression (LCC)
+Achieve **11-38x token reduction** before hit the network.
+- **Level 1 (Deterministic)**: Prunes structural noise (HTML/JSON boilerplate).
+- **Level 2 (Semantic)**: Prevents redundant writes via Jaccard-deduplication.
+- **Level 3 (Extractive)**: Consolidates long contexts into extractive summaries.
+
+### 🕰️ Memory History (The Hippocampus)
+100% auditable lineage. Retrieve the full versioned history of any memory block to understand why an agent modified a belief.
+
+### 🕸️ Knowledge Graph (The Cortical Mesh)
+Distributed relational memory. Link memories via explicit edges (`supports`, `contradicts`, `part-of`) and traverse them via recursive discovery.
+
+### 🪞 MIRROR Tier (Stability)
+Use Lyapunov-inspired stability loops to protect critical reasoning blocks from the automatic decay cycles.
+
+---
+
+## 🚀 Quickstart
+
+### 1. Installation
+```bash
+pip install superbrain-fabric-sdk
+```
+
+### 2. Basic Cognitive Write
+```python
+from superbrain import SuperbrainFabricClient
+
+# Connect to the Fabric
+client = SuperbrainFabricClient("coordinator:50050")
+
+# Write a memory with automated LCC Level 3 and Mirror protection
+ptr_id = client.write_memory(
+    "Long research context...", 
+    liveliness=0.9, 
+    tag="strategy", 
+    lcc_level=3,
+    mirror_reinforcement=True
+)
+
+print(f"Memory anchored at: {ptr_id}")
+```
+
+### 3. Relational Discovery (Knowledge Graph)
+```python
+# Link two cognitive blocks
+client.add_edge(source_ptr, target_ptr, relation="supports", weight=1.0)
+
+# Query the mesh
+context = client.query_graph(source_ptr, depth=2)
+```
+
+### 4. Audit Trail (History)
+```python
+# See how a memory evolved over time
+history = client.get_memory_history(ptr_id)
+for snap in history:
+    print(f"Version {snap['version']} tag: {snap['tag']}")
+```
+
+---
+
+## 🛡️ Security & Performance
+- **E2EE**: Enable via `encryption_key=b'...'` for AES-256-GCM SDK-level protection.
+- **Low Latency**: Automated **SHM Bypass** (<15μs) for co-located agents.
+- **Durable Mode**: WAL-backed recovery support.
+
+---
+
+MIT License · Built by **Anispy**

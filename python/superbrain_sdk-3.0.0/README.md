@@ -1,6 +1,6 @@
-# 🧠 superbrain-sdk v3.0.0 — Python
+# 🧠 superbrain-fabric-sdk v3.0.0 — Python
 
-[![PyPI version](https://badge.fury.io/py/superbrain-sdk.svg)](https://badge.fury.io/py/superbrain-sdk)
+[![PyPI version](https://badge.fury.io/py/superbrain-fabric-sdk.svg)](https://badge.fury.io/py/superbrain-fabric-sdk)
 [![License: BSL 1.1](https://img.shields.io/badge/License-BSL%201.1-blue.svg)](https://github.com/golightstep/superbrainSdk/blob/main/LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Demo Code](https://img.shields.io/badge/Demo-Code-blue.svg)](https://github.com/golightstep/superbrainSDKDemo)
@@ -40,7 +40,7 @@ SuperBrain is a **distributed RAM network** where multiple AI agents on differen
 ## 📦 Installation
 
 ```bash
-pip install superbrain-sdk
+pip install superbrain-fabric-sdk
 ```
 
 ---

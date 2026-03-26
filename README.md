@@ -26,16 +26,16 @@ https://github.com/anispy211/superbrainSDKDemo
 3. Redis + Superbrain
 
 ### 📦 Installation
-- **Python**: `pip install superbrain-sdk`
-- **Node.js**: `npm install superbrain-distributed-sdk`
+- **Python**: `pip install superbrain-fabric-sdk`
+- **Node.js**: `npm install superbrain-fabric-sdk`
 - **Go**: `go get github.com/golightstep/superbrainSdk`
 
 ### 📦 Installation & Registry Links
-- **Python**: [`superbrain-sdk`](https://pypi.org/project/superbrain-sdk/) 
-  - `pip install superbrain-sdk`
+- **Python**: [`superbrain-fabric-sdk`](https://pypi.org/project/superbrain-fabric-sdk/) 
+  - `pip install superbrain-fabric-sdk`
   - [Python README](./python/README.md)
-- **Node.js**: [`superbrain-distributed-sdk`](https://www.npmjs.com/package/superbrain-distributed-sdk)
-  - `npm install superbrain-distributed-sdk`
+- **Node.js**: [`superbrain-fabric-sdk`](https://www.npmjs.com/package/superbrain-fabric-sdk)
+  - `npm install superbrain-fabric-sdk`
   - [Node.js README](./node/README.md)
 - **Go**: `go get github.com/golightstep/superbrainSdk`
 

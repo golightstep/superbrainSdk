@@ -1,0 +1,5 @@
+numpy
+faiss-cpu
+
+[semantic]
+sentence-transformers

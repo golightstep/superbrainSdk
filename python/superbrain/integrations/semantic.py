@@ -188,6 +188,70 @@ class SemanticMemoryStore:
             
         return results
 
+    def hybrid_search(
+        self, 
+        query_text: str, 
+        query_embedding: List[float] | np.ndarray, 
+        top_k: int = 5,
+        rrf_k: int = 60
+    ) -> List[Tuple[SemanticRecord, float]]:
+        """
+        Hybrid Search: Vector (FAISS) + Keyword (Coordinator) fused via RRF.
+        
+        Args:
+            query_text: The text to use for keyword matching.
+            query_embedding: The vector to use for similarity search.
+            top_k: Number of final results to return.
+            rrf_k: Smoothing constant for Reciprocal Rank Fusion (default 60).
+        """
+        # 1. Get Vector Results (Ranked)
+        vector_results = self.search(query_embedding, top_k=top_k * 2)
+        
+        # 2. Get Keyword Results (Ranked)
+        # Assuming query_text is passed to the Coordinator's SearchMemories
+        keyword_results = self._ctrl.search_memories(query_text, top_k=top_k * 2)
+        
+        # 3. Fuse via RRF
+        return self._rrf_fuse(vector_results, keyword_results, rrf_k, top_k)
+
+    def _rrf_fuse(
+        self, 
+        vector_results: List[Tuple[SemanticRecord, float]], 
+        keyword_results: List[Dict], 
+        k: int,
+        top_k: int
+    ) -> List[Tuple[SemanticRecord, float]]:
+        """Reciprocal Rank Fusion (RRF) algorithm."""
+        scores: Dict[str, float] = {} # ptr_id -> rrf_score
+        ptr_to_record: Dict[str, SemanticRecord] = {}
+
+        # Process Vector Results
+        for rank, (record, _) in enumerate(vector_results):
+            ptr_id = record.ptr_id
+            scores[ptr_id] = scores.get(ptr_id, 0.0) + 1.0 / (k + rank + 1)
+            ptr_to_record[ptr_id] = record
+
+        # Process Keyword Results
+        for rank, res in enumerate(keyword_results):
+            ptr_id = res["pointer_id"]
+            scores[ptr_id] = scores.get(ptr_id, 0.0) + 1.0 / (k + rank + 1)
+            # If pointer not in FAISS (e.g. metadata only), create a temporary record
+            if ptr_id not in ptr_to_record:
+                ptr_to_record[ptr_id] = SemanticRecord(
+                    text=res.get("snippet", ""),
+                    metadata={"tag": res.get("tag", ""), "liveliness": res.get("liveliness", 0)},
+                    ptr_id=ptr_id
+                )
+
+        # Sort by RRF score
+        sorted_ptrs = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        
+        final_results = []
+        for ptr_id, score in sorted_ptrs[:top_k]:
+            final_results.append((ptr_to_record[ptr_id], score))
+            
+        return final_results
+
     def commit(self) -> str:
         """
         Serialize the FAISS index and store it in SuperBrain.
